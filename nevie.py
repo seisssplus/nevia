@@ -11,7 +11,11 @@ from telethon import TelegramClient, events
 from telethon.tl.types import Message, PeerChannel, InputPeerEmpty, InputPeerChannel, InputPeerUser
 from telethon.tl.functions.messages import GetHistoryRequest, SendMessageRequest, GetPeerDialogsRequest
 from telethon.errors.rpcerrorlist import PeerFloodError, UserPrivacyRestrictedError
-
+from telethon import events
+from telethon.tl.types import PeerUser, PeerChat
+from telethon.sync import TelegramClient
+from telethon.tl.types import InputPhoto, InputFile
+import os
 
 def load_mods():
     mod_dir = "mods"
@@ -27,14 +31,20 @@ def load_mods():
 
 client = TelegramClient("session", "23962937", "e247a38e5d7d45235018717e76920252")
 
+
 @client.on(events.NewMessage(pattern='.mods'))
 async def handler(event):
-    mods_dir = 'mods'
-    py_files = [f[:-3] for f in os.listdir(mods_dir) if f.endswith('.py')]
-    py_files.sort(reverse=True)
-    
-    await event.reply(f"Список модов:\n\n" + "\n".join(py_files) + f"\n\nВсего модов:  {len(py_files)}")
-    await event.delete()
+    if event.is_group:
+        if event.sender_id == (await client.get_me()).id:
+            mods_dir = 'mods'
+            py_files = [f[:-3] for f in os.listdir(mods_dir) if f.endswith('.py')]
+            py_files.sort(reverse=True)
+
+            mods_list = "\n".join(py_files)
+            total_mods = len(py_files)
+
+            await event.respond(f"Список модов:\n\n{mods_list}\n\nВсего модов: {total_mods}")
+            await event.delete()
 
 if __name__ == "__main__":
     print(
